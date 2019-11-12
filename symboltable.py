@@ -1,21 +1,33 @@
-# symbol-table.py
+# symboltable.py
 # Author: José Alexander Brenes Brenes
 # A symbol table implementation using dictionaries
 
+
 class SymbolTable:
-	
-	def __init__(self):
-		self._HashTabel = dict()
-	
-	def lookup(self, symbol):
-		return self._lookup(symbol)
-	
-	def _lookup(self, symbol):
-		return symbol is in self._HashTabel #Se podría hacer con la función get() del diccionario
-	
-	def insert(self, symbol, data_type):
-		if not self._lookup(symbol):
-			self._insert(symbol, data_type)
-			
-	def _insert(self, symbol, data_type):
-		self._HashTabel[symbol] = data_type
+
+    # Se podría recibir por parámetro el enfoque
+    # en el que se encuentra, si no
+    # recibe nada entonces es 0
+    def __init__(self):
+        self._HashTable = {}
+        self._scope = 0
+
+    def lookup(self, symbol):
+        return self._lookup(symbol)
+
+    def _lookup(self, symbol):
+        return self._HashTable.get(symbol)
+
+    def insert(self, data_type, symbol=None):
+        if symbol is None:
+            self._add_scope(self._scope + 1, data_type)
+            self._scope += 1
+        elif not self._lookup(symbol):
+            self._insert(data_type, symbol)
+        # Exception
+
+    def _insert(self, data_type, symbol):
+        self._HashTable[symbol] = data_type
+
+    def _add_scope(self, data_type, symbol):
+        self._insert(data_type, SymbolTable())
