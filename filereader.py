@@ -5,7 +5,8 @@
 import re  # Regular Expression built-in
 import symboltable
 
-LIMITS = ' |;|\(|\)|\n|\t'
+LIMITS = ' |;|\n|\t'
+
 
 class FileReader:
     def __init__(self, file_path):
@@ -23,12 +24,18 @@ class FileReader:
         return self._read()
 
     def _is_data_type(self, string):
-        
+        if (string == 'char' or string == 'int' or string == 'float' or string == 'string'):
+            return True
+        return False
 
     def _read(self):
-        c = 0
         for line in self._handler:
             for word in re.split(LIMITS, line):
                 if word:
-                    print(word)
-                    
+                    if self._is_data_type(word):
+                        symbol = re.split(LIMITS, line).pop(
+                            re.split(LIMITS, line).index(word) + 1)
+                        self._MainScope.insert(word, symbol)
+                    else:
+                        pass
+        print(self._MainScope._HashTable)

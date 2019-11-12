@@ -19,12 +19,14 @@ class SymbolTable:
         return self._HashTable.get(symbol)
 
     def insert(self, data_type, symbol=None):
-        if symbol is None:
-            self._add_scope(self._scope + 1, data_type)
-            self._scope += 1
-        elif not self._lookup(symbol):
-            self._insert(data_type, symbol)
-        # Exception
+		try:
+			if symbol is None:
+				self._add_scope(self._scope + 1, data_type)
+				self._scope += 1
+			elif not self._lookup(symbol):
+				self._insert(data_type, symbol)
+			else:
+				raise Exception(f"Error - Line 'line': Double definition of 'variable'")
 
     def _insert(self, data_type, symbol):
         self._HashTable[symbol] = data_type

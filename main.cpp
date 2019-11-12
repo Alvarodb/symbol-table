@@ -4,6 +4,7 @@ string var2;
 string var3;
 char var4;
 char var5;
+char var;
 float var6;
 float var7;
 
