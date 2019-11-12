@@ -5,6 +5,7 @@
 import re  # Regular Expression built-in
 import symboltable
 
+LIMITS = ' |;|\(|\)|\n|\t'
 
 class FileReader:
     def __init__(self, file_path):
@@ -21,10 +22,13 @@ class FileReader:
     def read(self):
         return self._read()
 
+    def _is_data_type(self, string):
+        
+
     def _read(self):
+        c = 0
         for line in self._handler:
-            for word in re.split(' |,;|,\(|,\)',line):
-                word = word.replace('\t','')
-                word = word.replace(';','')
-                print(word)
-#        return self._MainScope
+            for word in re.split(LIMITS, line):
+                if word:
+                    print(word)
+                    

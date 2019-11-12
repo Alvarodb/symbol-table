@@ -1,0 +1,43 @@
+Pasos para inserción en la tabla:
+1. Leer del archivo un nombre
+ 1.1 Si es alguno de los siguientes caracteres, la siguiente palabra se toma como símbolo
+	int
+	char
+	string
+	float
+
+	1.1.2 Leer el símbolo
+		Debe guardarse el tipo y el símbolo en la tabla
+		* primero se revisa que no esté en la tabla
+	
+
+Apertura de un enfoque:
+{
+Final de un enfoque:
+}
+Caracteres a ignorar:
+	
+	Operadores aritméticos:
+	
+	/
+	*
+	-
+	+
+	=
+	/=
+	*=
+	-=
+		
+	Operadores lógicos:
+	
+	==
+	!=
+	!
+	||
+	&&
+	
+	Otros caracteres:
+	
+	\n
+	\t
+	\0 => en python3: ' '

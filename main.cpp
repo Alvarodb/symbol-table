@@ -7,7 +7,7 @@ char var5;
 float var6;
 float var7;
 
-int foo(){
+int foo(int n){
 	if(var6 == var7){
 		return 1;
 	}
