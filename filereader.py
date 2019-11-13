@@ -6,6 +6,7 @@ import re  # Regular Expression built-in
 import symboltable
 
 LIMITS = ' |;|\n|\t'
+FUNCTION = '\w+|\(|\)|{|}'
 
 
 class FileReader:
@@ -30,12 +31,22 @@ class FileReader:
 
     def _read(self):
         for line in self._handler:
-            for word in re.split(LIMITS, line):
-                if word:
-                    if self._is_data_type(word):
-                        symbol = re.split(LIMITS, line).pop(
-                            re.split(LIMITS, line).index(word) + 1)
-                        self._MainScope.insert(word, symbol)
-                    else:
-                        pass
+            if not self.evaluate_function(line):
+                for word in re.split(LIMITS, line):
+                    if word:
+                        if self._is_data_type(word):
+                            symbol = re.split(LIMITS, line).pop(
+                                re.split(LIMITS, line).index(word) + 1)
+                            self._MainScope.insert(word, symbol)
         print(self._MainScope._HashTable)
+
+    def evaluate_function(self, line):
+        declaration = re.findall(FUNCTION,line)
+        if '(' in declaration:
+            #for element in declaration:
+            self._MainScope.insert(declaration[:2][0],(declaration[:2][1],symboltable.SymbolTable()))
+            return True
+        return False
+       
+    
+
