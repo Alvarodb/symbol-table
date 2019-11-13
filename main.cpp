@@ -7,6 +7,6 @@ char var5;
 float var6;
 float var7;
 
-int foo(string text){
+int foo(int n, int k, string uno, string dos, char mango){
 	
 }

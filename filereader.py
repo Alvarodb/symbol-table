@@ -41,10 +41,18 @@ class FileReader:
         print(self._MainScope._HashTable)
 
     def evaluate_function(self, line):
-        declaration = re.findall(FUNCTION,line)
-        if '(' in declaration:
-            #for element in declaration:
-            self._MainScope.insert(declaration[:2][0],(declaration[:2][1],symboltable.SymbolTable()))
+        declaration = re.findall(FUNCTION,line)       
+        if '(' in declaration: # if the line is a method declaration
+            key = declaration[:2][1]
+            values = (declaration[:2][0],symboltable.SymbolTable())
+            self._MainScope.insert(values,key)
+            declaration.pop(0) #cochino
+            declaration.pop(0) #vomitada perro
+            for index, element in enumerate(declaration):
+                if self._is_data_type(element):
+                    symbol = declaration[index + 1]
+                    self._MainScope._HashTable[key][1].insert(element,symbol)   
+                print(self._MainScope._HashTable[key][1]._HashTable)    
             return True
         return False
        
