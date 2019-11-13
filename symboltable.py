@@ -1,5 +1,5 @@
 # symboltable.py
-# Author: José Alexander Brenes Brenes
+# Author: José Alexander Brenes Brenes, Alvaro Delgado Brenes, Isaac Touma Rodriguez
 # A symbol table implementation using dictionaries
 
 
