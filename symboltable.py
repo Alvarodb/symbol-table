@@ -1,34 +1,38 @@
 # symboltable.py
-# Author: José Alexander Brenes Brenes, Alvaro Delgado Brenes, Isaac Touma Rodriguez
+# Author: José Alexander Brenes Brenes, Alvaro Delgado, Isaac Touma
 # A symbol table implementation using dictionaries
+
+"""
+1 El identificador {identificador} no está declarado en este enfoque.
+6 Doble declaración de identificador {identificador}.
+"""
+NOT_DEC = '1'
+DOUBLE_DEC = '6'
 
 
 class SymbolTable:
 
-    # Se podría recibir por parámetro el enfoque
-    # en el que se encuentra, si no
-    # recibe nada entonces es 0
     def __init__(self):
         self._HashTable = {}
-        self._scope = 0
+        self._scope = []
+
+    def __repr__(self):
+        return str(self._HashTable)
 
     def lookup(self, symbol):
         return self._lookup(symbol)
 
     def _lookup(self, symbol):
-        return self._HashTable.get(symbol)
+        if self._HashTable.get(symbol) is not None:
+            return self._HashTable.get(symbol)
+        for element in self._scope:
+            if element.get(symbol):
+                return element
+        return None
 
-    def insert(self, data_type, symbol=None):
-        if symbol is None:
-            self._add_scope(self._scope + 1, data_type)
-            self._scope += 1
-        elif not self._lookup(symbol):
+    def insert(self, data_type, symbol):
+        if self._lookup(symbol) is None:
             self._insert(data_type, symbol)
-        else:
-            raise Exception(f"Error - Line line: Double definition of variable")
 
     def _insert(self, data_type, symbol):
         self._HashTable[symbol] = data_type
-
-    def _add_scope(self, data_type, symbol):
-        self._insert(data_type, SymbolTable())
