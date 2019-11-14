@@ -1,12 +1,13 @@
 int var;
 int var1;
-string var2;
-string var3;
-char var4;
-char var5;
-float var6;
-float var7;
+char var2;
+char var3;
+float var4;
+float var5;
 
-int foo(int n, int k, string uno, string dos, char mango){
-	
+int foo(int n, int k, string uno, string dos, char mango)
+{
+    if (n == k)
+    {
+    }
 }
