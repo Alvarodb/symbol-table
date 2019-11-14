@@ -1,4 +1,4 @@
-import filereader
-fr = filereader
-reader = fr.FileReader('main.cpp')
-reader._read()
+import fileanalizer
+fr = fileanalizer
+reader = fr.FileAnalizer('main.cpp')
+reader.analize()
