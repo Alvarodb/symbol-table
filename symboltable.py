@@ -24,7 +24,7 @@ class SymbolTable:
     def _lookup(self, symbol):
         for upper_scope in self._upper_scopes:
             if upper_scope._lookup(symbol):
-                return upper_scope.get(symbol)
+                return upper_scope._lookup(symbol)
         if self._hash_table.get(symbol) is not None:
             return self._hash_table.get(symbol)
         return None
