@@ -8,7 +8,7 @@
 """
 NOT_DEC = '1'
 DOUBLE_DEC = '6'
-
+W_RTRN_TYPE = '3'
 class SymbolTable:
 
     def __init__(self):

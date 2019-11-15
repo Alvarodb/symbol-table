@@ -6,8 +6,9 @@ import sys
 import re  # Regular Expression built-in
 import symboltable
 
-PATTERN = '\w+|\(|\)|{|}'
+PATTERN = '\"?\w+\"?|\(|\)|{|}'
 BRACKET = '}'
+RETURN = 'return'
 
 
 class FileAnalizer:
@@ -53,7 +54,8 @@ class FileAnalizer:
                     self._insert(match[0], match[1], data_type)
                 elif not self._is_do_not_care(match[1]):
                     if not self._lookup(match[1]):
-                        self._error_switch(symboltable.NOT_DEC, match[1], match[0])
+                        self._error_switch(
+                            symboltable.NOT_DEC, match[1], match[0])
             elif data_type:
                 self._insert(match[0], match[1], data_type)
             elif not self._is_do_not_care(match[1]):
@@ -116,6 +118,8 @@ class FileAnalizer:
         while list:
             valor = list.pop(0)
             variable = valor[1]
+            # if variable == RETURN:
+            #    self._check_return(name, list.pop(0), valor[0])
             if variable is not BRACKET:
                 if self._is_data_type(variable):
                     datatype = variable
@@ -132,21 +136,36 @@ class FileAnalizer:
         hash_t = symboltable.SymbolTable()
         hash_t.add_upper_scope(hash_table)
         hash_t.concatenate_scopes(hash_table._upper_scopes)
-        valor = list.pop(0)
-        while valor[1] is not '}':
-            if not self._is_do_not_care(valor[1]):
-                # self._main_scope.lookup(valor[1]) is not None:
-                if not self._lookup(valor[1], hash_t):
-                    self._error_switch(
-                        symboltable.NOT_DEC, valor[1], valor[0])
-                else:
-                    if self._is_data_type(valor[1]):
-                        sig_valor = list.pop(0)
-                        # A usar:
-                        self._insert(
-                            sig_valor[0], sig_valor[1], valor[1], hash_t)
-                        # Isaac: hash_t.insert((sig_valor[1], valor[1]))
-                    elif self._is_structure(valor[1]):
-                        self.create_structure(hash_t, valor, list)
-            valor = list.pop(0)
         hash_table.insert((match[1]), (match[0], hash_t))
+        data_type = ''
+        while list:
+            match = list.pop(0)
+            if match[1] == BRACKET:
+                break
+            if self._is_data_type(match[1]):
+                data_type = match[1]
+            elif self._is_structure(match[1]):
+                self.create_structure(hash_t, match, list)
+            elif data_type:
+                self._insert(match[0], match[1], data_type, hash_t)
+            elif not self._is_do_not_care(match[1]):
+                self._lookup(match[1])
+
+    def _check_return(self, function, to_return, line):
+        if self._data_type(to_return) != self._main_scope._lookup(function)[0]:
+            self._error_switch(symboltable.W_RTRN_TYPE, function)
+
+    def _data_type(self, to_return):
+        data_type = re.findall('^\"\w+\"', to_return)
+        if data_type or to_return == 'string':
+            return 'string'
+        data_type = re.findall('^\'.\'', to_return)
+        if data_type or to_return == 'char':
+            return 'char'
+        data_type = re.findall('^[0-9]*$', to_return)
+        if data_type or to_return == 'int':
+            return 'int'
+        data_type = re.findall('^\d*\.?\d*$', to_return)
+        if data_type or to_return == 'float':
+            return 'float'
+        return None
