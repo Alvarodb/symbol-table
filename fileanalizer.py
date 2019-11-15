@@ -53,8 +53,7 @@ class FileAnalizer:
                     self._insert(match[0], match[1], data_type)
                 elif not self._is_do_not_care(match[1]):
                     if not self._lookup(match[1]):
-                        self._error_switch(
-                            symboltable.NOT_DEC, match[1], match[0])
+                        self._error_switch(symboltable.NOT_DEC, match[1], match[0])
             elif data_type:
                 self._insert(match[0], match[1], data_type)
             elif not self._is_do_not_care(match[1]):
@@ -105,7 +104,7 @@ class FileAnalizer:
         self._error_string += switcher.get(error_id, 'Unknown error')
 
     def _is_do_not_care(self, match):
-        if match == '{' or match == '}' or match == '(' or match == ')':
+        if match == '{' or match == '}' or match == '(' or match == ')' or match.isdigit():
             return True
         return False
 
