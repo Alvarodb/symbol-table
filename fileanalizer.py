@@ -5,15 +5,13 @@
 import sys
 import re  # Regular Expression built-in
 import symboltable
-
-PATTERN = '\".*?\"|\"?\w+\"?|\(|\)|{|}'
+PATTERN = '\d+\.?\d+|\".*?\"|\'.*?\'|\"?\w+\"?|\(|\)|{|}'
 BRACKET = '}'
 RETURN = 'return'
 
 
 class FileAnalizer:
     def __init__(self, file_path):
-        self._line = 1
         self._error_string = ''
         self._main_scope = symboltable.SymbolTable()
         self._open_file(file_path)
@@ -50,8 +48,10 @@ class FileAnalizer:
                 if self._is_function(list[0][1]):
                     list.pop(0)
                     self.evaluate_function(match[1], data_type, list)
+                    data_type = ''
                 elif data_type:
                     self._insert(match[0], match[1], data_type)
+                    data_type = ''
                 elif not self._is_do_not_care(match[1]):
                     if not self._lookup(match[1]):
                         self._error_switch(
@@ -87,10 +87,11 @@ class FileAnalizer:
 
     def _read(self):
         list = []
+        line_counter = 1
         for line in self._handler:
             for word in re.findall(PATTERN, line):
-                list.append((self._line, word))
-            self._line += 1
+                list.append((line_counter, word))
+            line_counter += 1
         return list
 
     def _is_function(self, next):
@@ -107,7 +108,19 @@ class FileAnalizer:
         self._error_string += switcher.get(error_id, 'Unknown error')
 
     def _is_do_not_care(self, match):
-        if match == '{' or match == '}' or match == '(' or match == ')' or match.isdigit():
+        if match == '{' or match == '}' or match == '(' or match == ')' or self._is_constant(match):
+            return True
+        return False
+
+    def _is_constant(self, value):
+        # Float or Integer value
+        if self._data_type(value) == 'float' or self._data_type(value) == 'int':
+            return True
+        temp = re.findall('^\'.\'', value)  # Char value
+        if temp:
+            return True
+        temp = re.findall('\".*?\"', value)  # String value
+        if temp:
             return True
         return False
 
@@ -126,17 +139,17 @@ class FileAnalizer:
             if variable is not BRACKET:
                 if self._is_data_type(variable):
                     data_type = variable
-                elif not self._is_data_type(variable) and not self._is_do_not_care(variable) and not self._is_structure(variable):
+                elif data_type and not self._is_data_type(variable) and not self._is_do_not_care(variable) and not self._is_structure(variable):
                     # A usar:
                     self._insert(valor[0], variable, data_type, hash_table)
+                    data_type = ''
                     # Álvaro : hash_table.insert(datatype, variable)
                 elif self._is_structure(variable):
                     return_ = self.create_structure(hash_table, valor, list)
                     if return_ is not None:
-                    #                     self._check_return_func(
-                    # hash_table, list.pop(0)[1], valor[0], function_type, name)
-                        pass
-                    #PENDIENTE
+                        self._check_return_func(
+                            hash_table, return_[1], return_[0], function_type, name)
+                    # PENDIENTE
             else:
                 break
 
@@ -146,21 +159,26 @@ class FileAnalizer:
         hash_t.concatenate_scopes(hash_table._upper_scopes)
         hash_table.insert((match[1]), (match[0], hash_t))
         data_type = ''
+        to_return = None
         while list:
             match = list.pop(0)
             if match[1] == RETURN:
-                return (self._lookup(list.pop(0)[1], hash_t), match[0])
+                return list.pop(0)
             if match[1] == BRACKET:
                 break
             if self._is_data_type(match[1]):
                 data_type = match[1]
             elif self._is_structure(match[1]):
-                self.create_structure(hash_t, match, list)
+                to_return = self.create_structure(hash_t, match, list)
+                data_type = ''
             elif data_type:
                 self._insert(match[0], match[1], data_type, hash_t)
+                data_type = ''
             elif not self._is_do_not_care(match[1]):
-                self._lookup(match[1])
-        return None
+                if not self._lookup(match[1], hash_t):
+                    self._error_switch(
+                        symboltable.NOT_DEC, match[1], match[0])
+        return to_return
 
     def _check_return_func(self, hash_t, to_return, line, function_returns, function):
         return_tuple = hash_t._lookup(to_return)
@@ -169,10 +187,13 @@ class FileAnalizer:
                 self._error_switch(str(symboltable.W_RTRN_TYPE),
                                    function, line)  # Exception
         else:
-            # Returns a constant value
+            # Returns a constant or a not defined value
             if function_returns != self._data_type(to_return):
+                if self._data_type(to_return) is None:
+                    self._error_switch(str(symboltable.NOT_DEC),
+                                    to_return, line)  # Exception    
                 self._error_switch(str(symboltable.W_RTRN_TYPE),
-                                   function, line)  # Exception
+                                function, line)  # Exception
 
     def _data_type(self, to_return):
         data_type = re.findall('\".*?\"', to_return)

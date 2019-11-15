@@ -1,5 +1,4 @@
 x = 40;
-
 int funcion(float v, string n)
 {
 	if (v > 0.0)
@@ -16,9 +15,9 @@ int funcion(float v, string n)
 		if (n)
 		{
 			float flotante;
+			return x;
 		}
-		n = "Mayor";
+		n = 'c';
 		x = x + 5;
-		return "una constante";
 	}
 }
