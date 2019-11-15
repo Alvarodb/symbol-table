@@ -6,7 +6,7 @@ import sys
 import re  # Regular Expression built-in
 import symboltable
 
-PATTERN = '\"?\w+\"?|\(|\)|{|}'
+PATTERN = '\".*?\"|\"?\w+\"?|\(|\)|{|}'
 BRACKET = '}'
 RETURN = 'return'
 
@@ -101,6 +101,7 @@ class FileAnalizer:
     def _error_switch(self, error_id, name, line):
         switcher = {
             '1': f'Error - Line {line}: \'{name}\' has not been declared in the current scope\n',
+            '2': f'Error - Line {line}: Return value does not match the function type of {name}',
             '6': f'Error - Line {line}: Double declaration of \'{name}\'\n'
         }
         self._error_string += switcher.get(error_id, 'Unknown error')
@@ -110,25 +111,32 @@ class FileAnalizer:
             return True
         return False
 
-    def evaluate_function(self, name, datatype, list):
+    def evaluate_function(self, name, data_type, list):
+        function_type = data_type
         hash_table = symboltable.SymbolTable()
         hash_table.add_upper_scope(self._main_scope)
-        values = (datatype, hash_table)
+        values = (data_type, hash_table)
         self._main_scope.insert(values, name)
         while list:
             valor = list.pop(0)
             variable = valor[1]
-            # if variable == RETURN:
-            #    self._check_return(name, list.pop(0), valor[0])
+            if variable == RETURN:
+                self._check_return_func(
+                    hash_table, list.pop(0)[1], valor[0], function_type, name)
             if variable is not BRACKET:
                 if self._is_data_type(variable):
-                    datatype = variable
+                    data_type = variable
                 elif not self._is_data_type(variable) and not self._is_do_not_care(variable) and not self._is_structure(variable):
                     # A usar:
-                    self._insert(valor[0], variable, datatype, hash_table)
+                    self._insert(valor[0], variable, data_type, hash_table)
                     # Álvaro : hash_table.insert(datatype, variable)
                 elif self._is_structure(variable):
-                    self.create_structure(hash_table, valor, list)
+                    return_ = self.create_structure(hash_table, valor, list)
+                    if return_ is not None:
+                    #                     self._check_return_func(
+                    # hash_table, list.pop(0)[1], valor[0], function_type, name)
+                        pass
+                    #PENDIENTE
             else:
                 break
 
@@ -140,6 +148,8 @@ class FileAnalizer:
         data_type = ''
         while list:
             match = list.pop(0)
+            if match[1] == RETURN:
+                return (self._lookup(list.pop(0)[1], hash_t), match[0])
             if match[1] == BRACKET:
                 break
             if self._is_data_type(match[1]):
@@ -150,22 +160,31 @@ class FileAnalizer:
                 self._insert(match[0], match[1], data_type, hash_t)
             elif not self._is_do_not_care(match[1]):
                 self._lookup(match[1])
+        return None
 
-    def _check_return(self, function, to_return, line):
-        if self._data_type(to_return) != self._main_scope._lookup(function)[0]:
-            self._error_switch(symboltable.W_RTRN_TYPE, function)
+    def _check_return_func(self, hash_t, to_return, line, function_returns, function):
+        return_tuple = hash_t._lookup(to_return)
+        if return_tuple is not None:
+            if return_tuple != function_returns:
+                self._error_switch(str(symboltable.W_RTRN_TYPE),
+                                   function, line)  # Exception
+        else:
+            # Returns a constant value
+            if function_returns != self._data_type(to_return):
+                self._error_switch(str(symboltable.W_RTRN_TYPE),
+                                   function, line)  # Exception
 
     def _data_type(self, to_return):
-        data_type = re.findall('^\"\w+\"', to_return)
-        if data_type or to_return == 'string':
+        data_type = re.findall('\".*?\"', to_return)
+        if data_type:
             return 'string'
         data_type = re.findall('^\'.\'', to_return)
-        if data_type or to_return == 'char':
+        if data_type:
             return 'char'
         data_type = re.findall('^[0-9]*$', to_return)
-        if data_type or to_return == 'int':
+        if data_type:
             return 'int'
         data_type = re.findall('^\d*\.?\d*$', to_return)
-        if data_type or to_return == 'float':
+        if data_type:
             return 'float'
         return None

@@ -5,10 +5,11 @@
 """
 1 El identificador {identificador} no está declarado en este enfoque.
 6 Doble declaración de identificador {identificador}.
+2 El tipo de valor de retorno no coincide con el valor de retorno de <función>.
 """
 NOT_DEC = '1'
+W_RTRN_TYPE = '2'
 DOUBLE_DEC = '6'
-W_RTRN_TYPE = '3'
 class SymbolTable:
 
     def __init__(self):

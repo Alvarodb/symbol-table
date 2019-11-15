@@ -4,18 +4,21 @@ int funcion(float v, string n)
 {
 	if (v > 0.0)
 	{
-		while(n){
+		while (n)
+		{
 			string perro;
 			char mango;
 		}
-		if(v){
+		if (v)
+		{
 			int t;
 		}
-		if(n){
+		if (n)
+		{
 			float flotante;
 		}
 		n = "Mayor";
 		x = x + 5;
+		return "una constante";
 	}
-	return n;
 }
