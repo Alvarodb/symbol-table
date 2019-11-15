@@ -2,6 +2,7 @@
 # Author: José Alexander Brenes Brenes, Alvaro Delgado Brenes, Isaac Touma
 # Description: ...
 
+import sys
 import re  # Regular Expression built-in
 import symboltable
 
@@ -13,7 +14,7 @@ class FileAnalizer:
     def __init__(self, file_path):
         self._line = 1
         self._error_string = ''
-        self._MainScope = symboltable.SymbolTable()
+        self._main_scope = symboltable.SymbolTable()
         self._open_file(file_path)
 
     def _open_file(self, file_path):
@@ -36,11 +37,6 @@ class FileAnalizer:
             return True
         return False
 
-    def _evaluate_parameters(self, data_type, function, file_queue):
-        function_scope = symboltable.SymbolTable()
-        # Guarda el _MainScope como enfoque superior
-        function_scope._scope.insert(self._MainScope)
-
     def _list_analizer(self, list):
         data_type = ''
         while list:
@@ -48,29 +44,39 @@ class FileAnalizer:
             if self._is_data_type(match[1]):
                 data_type = match[1]
             elif self._is_structure(match[1]):
-                self.create_structure(self._MainScope, match, list)
+                self.create_structure(self._main_scope, match, list)
             elif list:
                 if self._is_function(list[0][1]):
                     list.pop(0)
                     self.evaluate_function(match[1], data_type, list)
                 elif data_type:
-                    self._insert(match[1], data_type)
+                    self._insert(match[0], match[1], data_type)
+                elif not self._is_do_not_care(match[1]):
+                    if not self._lookup(match[1]):
+                        self._error_switch(
+                            symboltable.NOT_DEC, match[1], match[0])
             elif data_type:
-                self._insert(match, data_type)
-            elif not self._is_do_not_care(match):
-                self._lookup(match)
+                self._insert(match[0], match[1], data_type)
+            elif not self._is_do_not_care(match[1]):
+                self._lookup(match[1])
+        print(self._error_string)
+        print(self._main_scope)
+        return not self._error_string
 
     def _lookup(self, symbol, current_scope=None):
         if current_scope is None:
-            current_scope = self._MainScope
+            current_scope = self._main_scope
         if current_scope.lookup(symbol) is None:
             return False
         return True
 
-    def _insert(self, symbol, data_type, table=None):
+    def _insert(self, line, symbol, data_type, table=None):
         if table is None:
-            table = self._MainScope
-        table.insert(data_type, symbol)
+            table = self._main_scope
+        try:
+            table.insert(data_type, symbol)
+        except Exception as exception:
+            self._error_switch(str(exception), symbol, line)
 
     def analize(self):
         self._analize()
@@ -91,10 +97,10 @@ class FileAnalizer:
             return True
         return False
 
-    def _error_switch(self, error_id, name):
+    def _error_switch(self, error_id, name, line):
         switcher = {
-            '1': f'Error - Line {self._line}: \'{name}\' has not been declared in the current scope\n',
-            '6': f'Error - Line {self._line}: Double declaration of \'{name}\'\n'
+            '1': f'Error - Line {line}: \'{name}\' has not been declared in the current scope\n',
+            '6': f'Error - Line {line}: Double declaration of \'{name}\'\n'
         }
         self._error_string += switcher.get(error_id, 'Unknown error')
 
@@ -104,10 +110,10 @@ class FileAnalizer:
         return False
 
     def evaluate_function(self, name, datatype, list):
-        key = name
         hash_table = symboltable.SymbolTable()
+        hash_table.add_upper_scope(self._main_scope)
         values = (datatype, hash_table)
-        self._MainScope.insert(values, key)
+        self._main_scope.insert(values, name)
         while list:
             valor = list.pop(0)
             variable = valor[1]
@@ -115,25 +121,33 @@ class FileAnalizer:
                 if self._is_data_type(variable):
                     datatype = variable
                 elif not self._is_data_type(variable) and not self._is_do_not_care(variable) and not self._is_structure(variable):
-                    hash_table.insert(datatype, variable)
+                    # A usar:
+                    self._insert(valor[0], variable, datatype, hash_table)
+                    # Álvaro : hash_table.insert(datatype, variable)
                 elif self._is_structure(variable):
                     self.create_structure(hash_table, valor, list)
-                else:
-                    break
+            else:
+                break
 
-    def create_structure(self, HashTable, match, list):
+    def create_structure(self, hash_table, match, list):
         hash_t = symboltable.SymbolTable()
+        hash_t.add_upper_scope(hash_table)
+        hash_t.concatenate_scopes(hash_table._upper_scopes)
         valor = list.pop(0)
         while valor[1] is not '}':
             if not self._is_do_not_care(valor[1]):
-                if self._MainScope.lookup(valor[1]) is not None:
-                    pass
+                # self._main_scope.lookup(valor[1]) is not None:
+                if not self._lookup(valor[1], hash_t):
+                    self._error_switch(
+                        symboltable.NOT_DEC, valor[1], valor[0])
                 else:
                     if self._is_data_type(valor[1]):
                         sig_valor = list.pop(0)
-                        
-                        hash_t.insert((sig_valor[1], valor[1]))
+                        # A usar:
+                        self._insert(
+                            sig_valor[0], sig_valor[1], valor[1], hash_t)
+                        # Isaac: hash_t.insert((sig_valor[1], valor[1]))
                     elif self._is_structure(valor[1]):
                         self.create_structure(hash_t, valor, list)
             valor = list.pop(0)
-        HashTable.insert((match[1]), (match[0], hash_t))
+        hash_table.insert((match[1]), (match[0], hash_t))

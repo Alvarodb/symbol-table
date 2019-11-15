@@ -4,5 +4,5 @@
 
 import fileanalizer
 fr = fileanalizer
-reader = fr.FileAnalizer('main.cpp')
+reader = fr.FileAnalizer('enunciado.cpp')
 reader.analize()
