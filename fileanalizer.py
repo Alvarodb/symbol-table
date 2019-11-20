@@ -149,7 +149,10 @@ class FileAnalizer:
                     if return_ is not None:
                         self._check_return_func(
                             hash_table, return_[1], return_[0], function_type, name)
-                    # PENDIENTE
+                elif not self._is_do_not_care(variable):
+                    if not self._lookup(variable, hash_table):
+                        self._error_switch(
+                            symboltable.NOT_DEC, variable, valor[0])
             else:
                 break
 
@@ -191,7 +194,7 @@ class FileAnalizer:
             if function_returns != self._data_type(to_return):
                 if self._data_type(to_return) is None:
                     self._error_switch(str(symboltable.NOT_DEC),
-                                    to_return, line)  # Exception    
+                                    to_return, line)  # Exception
                 self._error_switch(str(symboltable.W_RTRN_TYPE),
                                 function, line)  # Exception
 
