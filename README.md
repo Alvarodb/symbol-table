@@ -30,23 +30,21 @@ Para cada error (en cuanto a símbolos) en el archivo de texto, existirá un có
 |:------:|:-------------------------------------------------------------------------------------------------------------:|
 |    1   | El identificador <`identificador`> no está declarado en este enfoque.                                           |
 |    2   | El tipo de valor de retorno no coincide con el valor de retorno de <`función`>.                                 |
-|    3   | La lista de parámetros de la función <`función`> no coincide con los parámetros <`parámetros erróneos`>.          |
-|    4   | No es posible la operación lógica <`operación`> entre los identificadores <`identificador1, identificador2`>.     |
-|    5   | No es posible la operación aritmética <`operación`> entre los identificadores <`identificador1, identificador2`>. |
 |    6   | Doble declaración de identificador <`identificador`>.                                                           |
-|    7   | ...                                                                                                           |
-|    n   | ...                                                                                                           |
-# DISEÑO 1 (PRIMER PROTOTIPO)
+
+# DISEÑO FINAL
 
 ## `SymbolTable`
 
 Una clase que implementa las funcionalidades básicas de una tabla de símbolos:
+
 - `lookup(<identificador>)`
 - `insert(<identificador>, <tipo de dato>)`
+- `concatenate_scopes(upper_scope)`
+- `add_upper_scope(upper_scope)`
 
-## `TextfileReader`
+Los dos últimos utilizados para el manejo de los diferentes enfoques, es decir,por ejemplo para poder buscar si una variable utilizada en un método y no ha sido declarada ahí mismo, fue declarada en un enfoque superior (upper_scope) como lo sería en el enfoque global.
 
-Esta clase tiene la responsabilidad de leer un archivo de texto mientras carga su contenido en una  instancia de la clase SymbolTable.
+## `FileAnalizer`
 
-Siendo un sub-árbol n-ario *A* y su raíz *r*.
-El contenido o valor asociado al vértice *r* se trata de una instancia *ST* de la clase `SymbolTable`, donde esta representa el enfoque principal del código fuente. El conjunto de elementos en *ST* está conformado por cada uno de los símbolos declarados en el enfoque.
+Esta clase tiene la responsabilidad de leer un archivo de texto mientras carga su contenido en instancias de la clase SymbolTable. Siendo cada SymbolTable utilizada para representar los diferentes enfoques del código.
