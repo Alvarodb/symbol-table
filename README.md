@@ -1,8 +1,12 @@
 
 Universidad Nacional de Costa Rica, Curso Estructuras de Datos - II Ciclo, 2019.
+
 Integrandes del grupo:
+
 Alvaro Daniel Delgado Brenes
+
 Isaac Touma Rodriguez
+
 Alexander Brenes Brenes
 
 # symbol-table implementation
